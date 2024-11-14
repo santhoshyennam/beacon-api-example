@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <label id='lblTime'></label>
+    <br>
+    <img id='image' alt='Image'>
+    <br>
+    <a id='nextLink'>Next</a>
+    <br>
+    <a id='prevLink'>Prev</a>
+
+    <script>
+        const fromDate = new Date();
+        let timeSpent = 0;
+        const url = new URL(window.location.href);
+        let id = getIdFromUrl(url);
+
+        updateTime();
+        displayImage(id);
+        createNextLink(id);
+        createPrevLink(id);
+
+        window.addEventListener("unload", () => {
+            sendBeacon(id, timeSpent);
+        });
+
+        function getIdFromUrl(url) {
+            let id = url.searchParams.get("id");
+            return id === null ? 1 : parseInt(id);
+        }
+
+        function updateTime() {
+            const toDate = new Date();
+            timeSpent = toDate.getTime() - fromDate.getTime();
+            document.getElementById("lblTime").textContent = timeSpent + "ms";
+            setTimeout(updateTime, 100);
+        }
+
+        function displayImage(id) {
+            const img = document.getElementById("image");
+            img.src = `${url.origin}/img/${id}.jpg`;
+            img.style.width = "500px";
+            img.style.height = "450px";
+        }
+
+        function createNextLink(id) {
+            const next = document.getElementById("nextLink");
+            if(id >=1 && id < 6) {
+                next.href = `http://localhost:8080/?id=${id + 1}`;
+                next.textContent = "Next";
+            } else {
+                next.style.display = "none";
+            }
+
+        }
+
+        function createPrevLink(id) {
+            const prev = document.getElementById("prevLink");
+            if (id > 1 && id <= 6) {
+                prev.href = `http://localhost:8080/?id=${id - 1}`;
+                prev.textContent = "Prev";
+            } else {
+                prev.style.display = "none";
+            }
+        }
+
+        function sendBeacon(id, timeSpent) {
+            navigator.sendBeacon(`http://localhost:8080?id=${id}&timespent=${timeSpent}`);
+        }
+    </script>
+</body>
+</html>
